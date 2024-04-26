@@ -1,0 +1,28 @@
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+  color: white;
+  background-color: #2f4f30;
+}
+
+.title {
+  text-align: center;
+  background-color: black;
+  color: white;
+  padding: 20px;
+  font-size: 25px;
+}
+
+.card {
+  position: relative;
+  width: 150px;
+  left: 100px;
+  margin-left: -75px;
+  background-color: transparent;
+}
+
+#computer-cards, #player-cards {
+  padding-top: 0.5%;
+}
