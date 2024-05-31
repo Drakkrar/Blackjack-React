@@ -5,34 +5,44 @@ const cardType = ['C', 'D', 'H', 'S'];
 const highCard = ['A', 'J', 'Q', 'K'];
 
 function App() {
+
   const [deck, setDeck] = useState<string[]>([]);
   const [playerDeck, setPlayerDeck] = useState<string[]>([]);
   const [computerDeck, setComputerDeck] = useState<string[]>([]);
   const [playerPoints, setPlayerPoints] = useState(0);
   const [computerPoints, setComputerPoints] = useState(0);
-  const [gameOver, setGameOver] = useState(false);
 
   useEffect(() => {
-    doNewDeck();
+      doNewDeck();
   }, []);
 
   const doNewDeck = () => {
-    let newDeck : string[] = [];
-    for (let i = 2; i <= 10; i++) {
-      for (let type of cardType) {
-        newDeck.push(i + type);
+      let newDeck = [];
+      for(let i = 2; i <= 10; i++) {
+          for(let type of cardType) {
+              newDeck.push(i + type);
+          }
       }
-    }
-    for (let high of highCard) {
-      for (let type of cardType) {
-        newDeck.push(high + type);
+      for(let high of highCard) {
+          for(let type of cardType) {
+              newDeck.push(high + type);
+          }
       }
-    }
-    newDeck = shuffle(newDeck);
-    setDeck(newDeck);
-  };
+      newDeck = shuffle(newDeck);
+      setDeck(newDeck);
+  }
 
-  // Función para barajar el mazo
+  const getCardFromDeck = () => {
+      if(deck.length === 0) {
+          return 'NoCard';
+      } else {
+          let newDeck = [...deck];
+          const card = newDeck.pop();
+          setDeck(newDeck);
+          return card;
+      }
+  }
+
   const shuffle = (array : string[]) => {
     let currentIndex = array.length, temporaryValue, randomIndex;
 
@@ -50,29 +60,65 @@ function App() {
     return array;
   };
 
-  // Resto de las funciones...
+  // @ts-ignore
+  const getCardValue = (card) => {
+      const value = card.substring(0, card.length - 1);
+      return isNaN(value) ? (value === 'A' ? 11 : 10) : value * 1;
+  }
+  // @ts-ignore
+  const updateScore = (participantScore, card) => {
+      return participantScore + getCardValue(card);
+  }
+  // @ts-ignore
+  const giveCard = (participantArray, card) => {
+      return [...participantArray, card];
+  }
+  // @ts-ignore
+  const computerDoTurn = (minPoints) => {
+      do {
+          const card = getCardFromDeck();
+          setComputerPoints(updateScore(computerPoints, card));
+          setComputerDeck(giveCard(computerDeck, card));
+      } while ((computerPoints < minPoints) && (minPoints <= 21));
+  }
+
+  const getWinner = () => {
+      let playersScoreArr = [{ "entity": "player", "score": playerPoints }, { "entity": "computer", "score": computerPoints }];
+      playersScoreArr = playersScoreArr.sort();
+      return playersScoreArr[1].score === playersScoreArr[0].score ? 'draw' : playersScoreArr[1].score <= 21 ? playersScoreArr[1].entity : playersScoreArr[0].entity;
+  }
+
+  const handleGetCardClick = () => {
+      const card = getCardFromDeck();
+      setPlayerPoints(updateScore(playerPoints, card));
+      setPlayerDeck(giveCard(playerDeck, card));
+      if (playerPoints > 21 || playerPoints === 21) {
+          computerDoTurn(playerPoints);
+      }
+  }
+
+  const handleStopClick = () => {
+      computerDoTurn(playerPoints);
+  }
+
+  const handleNewGameClick = () => {
+      doNewDeck();
+      setPlayerPoints(0);
+      setComputerPoints(0);
+      setPlayerDeck([]);
+      setComputerDeck([]);
+  }
 
   return (
-    <div className="game">
-      <h2>Blackjack con React</h2>
-      <div className="scoreboard">
-        <p>Puntos del Jugador: {playerPoints}</p>
-        <p>Puntos de la Computadora: {computerPoints}</p>
+      <div>
+          <button onClick={handleNewGameClick}>New Game</button>
+          <button onClick={handleGetCardClick}>Get Card</button>
+          <button onClick={handleStopClick}>Stop</button>
+          <div>Player Score: {playerPoints}</div>
+          <div>Computer Score: {computerPoints}</div>
+          <div>Player Cards: {playerDeck.map((card, index) => <img key={index} src={`./assets/deck/${card}.png`} className="card" alt="card" />)}</div>
+          <div>Computer Cards: {computerDeck.map((card, index) => <img key={index} src={`./assets/deck/${card}.png`} className="card" alt="card" />)}</div>
       </div>
-      <div className="card-table">
-        <div className="player-cards">
-          {/* Renderiza las cartas del jugador aquí */}
-        </div>
-        <div className="computer-cards">
-          {/* Renderiza las cartas de la computadora aquí */}
-        </div>
-      </div>
-      <div className="controls">
-        <button onClick={/* Función para obtener una carta */}>Pedir Carta</button>
-        <button onClick={/* Función para detenerse */}>Detenerse</button>
-        <button onClick={/* Función para nuevo juego */}>Nuevo Juego</button>
-      </div>
-    </div>
   );
 };
 
